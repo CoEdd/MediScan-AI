@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Medical Image Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .file-upload-container {
+            transition: all 0.3s ease;
+        }
+        .file-upload-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .result-card {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .result-card.show {
+            max-height: 1200px; /* Increased from 500px */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header Section -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-blue-800 mb-3">AI Medical Image Analyzer</h1>
+            <p class="text-gray-600 text-lg">
+                Upload a chest X-ray image to analyze for potential pneumonia. Our AI model will process the image and provide a prediction.
+            </p>
+        </header>
+        <div class="text-center mb-8">
+            <div class="inline-block bg-blue-100 text-blue-800 px-6 py-3 rounded-xl shadow font-semibold text-xl">
+                👋 Welcome to MediScan AI! Your AI-powered assistant for medical image analysis.
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <!-- File Upload Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden file-upload-container mb-8">
+                <div class="p-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Upload Your Medical Image</h2>
+                    
+                    <form id="uploadForm" class="space-y-6" enctype="multipart/form-data">
+                        <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-12 bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <p class="text-gray-600 mb-4">Drag & drop your image here or click to browse</p>
+                            <input type="file" id="imageInput" name="image" accept="image/jpeg,image/png,image/jpg" class="hidden" required>
+                            <button type="button" id="browseBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Select Image
+                            </button>
+                            <p id="fileName" class="text-sm text-gray-500 mt-3 hidden"></p>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <button type="submit" id="submitBtn" class="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                                <span>Analyze Image</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                    <h3 class="text-xl font-medium text-gray-800">Analyzing your image...</h3>
+                    <p class="text-gray-600">This may take a few moments. Please wait.</p>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="resultCard" class="result-card bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Analysis Result</h2>
+                    
+                    <div id="normalResult" class="hidden">
+                        <div class="flex flex-col items-center text-center py-6">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-green-600 mb-2">Normal</h3>
+                            <p class="text-gray-600">The AI analysis indicates no signs of pneumonia in the uploaded image.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="pneumoniaResult" class="hidden">
+                        <div class="flex flex-col items-center text-center py-6">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-red-600 mb-2">Pneumonia Detected</h3>
+                            <p class="text-gray-600">The AI analysis suggests potential signs of pneumonia in the uploaded image.</p>
+                            <p class="text-sm text-gray-500 mt-4">Note: This is an AI-assisted analysis. Please consult with a medical professional for a definitive diagnosis.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="errorResult" class="hidden">
+                        <div class="flex flex-col items-center text-center py-6">
+                            <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-yellow-600 mb-2">Analysis Error</h3>
+                            <p id="errorMessage" class="text-gray-600">There was an issue processing your image.</p>
+                            <button onclick="resetForm()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Uploaded Image Preview</h3>
+                        <div class="flex justify-center">
+                            <img id="imagePreview" src="" alt="Uploaded image preview" class="max-w-full h-auto rounded-lg border border-gray-200 object-contain" style="max-height:400px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm mt-12">
+            <p>AI Medical Image Analyzer - For research purposes only</p>
+            <p class="mt-1">Always consult with a qualified healthcare professional for medical diagnosis.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const browseBtn = document.getElementById('browseBtn');
+            const imageInput = document.getElementById('imageInput');
+            const fileName = document.getElementById('fileName');
+            const uploadForm = document.getElementById('uploadForm');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultCard = document.getElementById('resultCard');
+            const normalResult = document.getElementById('normalResult');
+            const pneumoniaResult = document.getElementById('pneumoniaResult');
+            const errorResult = document.getElementById('errorResult');
+            const errorMessage = document.getElementById('errorMessage');
+            const imagePreview = document.getElementById('imagePreview');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Handle browse button click
+            browseBtn.addEventListener('click', function() {
+                imageInput.click();
+            });
+
+            // Handle file selection
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                    fileName.classList.remove('hidden');
+                    
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            // Handle form submission (simulated)
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate file
+                if (!imageInput.files || !imageInput.files[0]) {
+                    showError('Please select an image file to upload.');
+                    return;
+                }
+                
+                const file = imageInput.files[0];
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                
+                if (!validTypes.includes(file.type)) {
+                    showError('Please upload a valid image file (JPEG, PNG).');
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showError('Image size should be less than 5MB.');
+                    return;
+                }
+                
+                // Show loading indicator
+                loadingIndicator.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>Processing...</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 animate-spin" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>';
+                
+                // Simulate API call with timeout
+                setTimeout(function() {
+                    loadingIndicator.classList.add('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Analyze Image</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" /></svg>';
+                    
+                    // Random result for demo (in real app, this would come from backend)
+                    const randomResult = Math.random() > 0.5 ? 'normal' : 'pneumonia';
+                    
+                    // Show appropriate result
+                    if (randomResult === 'normal') {
+                        normalResult.classList.remove('hidden');
+                        pneumoniaResult.classList.add('hidden');
+                        errorResult.classList.add('hidden');
+                    } else {
+                        normalResult.classList.add('hidden');
+                        pneumoniaResult.classList.remove('hidden');
+                        errorResult.classList.add('hidden');
+                    }
+                    
+                    // Show result card with animation
+                    resultCard.classList.add('show');
+                }, 3000);
+            });
+
+            // Drag and drop functionality
+            const dropArea = uploadForm.querySelector('.border-dashed');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('border-blue-400', 'bg-blue-50');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('border-blue-400', 'bg-blue-50');
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    imageInput.files = files;
+                    fileName.textContent = files[0].name;
+                    fileName.classList.remove('hidden');
+                    
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            }
+        });
+
+        function showError(message) {
+            const errorResult = document.getElementById('errorResult');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultCard = document.getElementById('resultCard');
+            const normalResult = document.getElementById('normalResult');
+            const pneumoniaResult = document.getElementById('pneumoniaResult');
+            
+            errorMessage.textContent = message;
+            normalResult.classList.add('hidden');
+            pneumoniaResult.classList.add('hidden');
+            errorResult.classList.remove('hidden');
+            resultCard.classList.add('show');
+        }
+
+        function resetForm() {
+            const uploadForm = document.getElementById('uploadForm');
+            const imageInput = document.getElementById('imageInput');
+            const fileName = document.getElementById('fileName');
+            const resultCard = document.getElementById('resultCard');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            uploadForm.reset();
+            fileName.classList.add('hidden');
+            resultCard.classList.remove('show');
+            imagePreview.src = '';
+        }
+    </script>
+</body>
+</html>
