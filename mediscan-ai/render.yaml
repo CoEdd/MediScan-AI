@@ -1,11 +1,9 @@
 services:
   - type: web
-    name: pneumonia-detector
+    name: flask-app
     env: python
-    buildCommand: ""
-    startCommand: gunicorn app.app:app
-    runtime: python
-    region: singapore
-    plan: free
-    autoDeploy: true
-    branch: main
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PORT
+        value: 10000  # or leave it and Render will inject one
