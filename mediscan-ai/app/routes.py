@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 from werkzeug.utils import secure_filename
 import os
-from .predict import predict_image # Changed to relative import
+from app.predict import predict_image # Changed to relative import
 
 routes = Blueprint('routes', __name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
