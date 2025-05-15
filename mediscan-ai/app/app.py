@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from routes import routes # Import the blueprint
+from app.routes import routes # Import the blueprint
 
 app = Flask(__name__)
 app.register_blueprint(routes) # Register the blueprint
