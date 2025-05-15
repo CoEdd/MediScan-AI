@@ -2,5 +2,8 @@ services:
   - type: web
     name: pneumonia-detector
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      mkdir -p app/model
+      gdown --id 1dRy_FzX7lFRNgWpT4kMhBWdafFHkfPhj -O app/model/pneumonia_cnn.h5
     startCommand: gunicorn app.app:app
