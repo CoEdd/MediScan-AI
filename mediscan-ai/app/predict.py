@@ -1,3 +1,5 @@
+import os
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'model', 'pneumonia_cnn.h5')
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 import numpy as np
