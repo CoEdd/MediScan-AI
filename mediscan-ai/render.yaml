@@ -3,4 +3,4 @@ services:
     name: pneumonia-detector
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app.app:app --chdir app
+    startCommand: gunicorn app.app:app
