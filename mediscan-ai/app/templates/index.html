@@ -31,6 +31,17 @@
             max-height: 1200px; /* Increased from 500px */
         }
     </style>
+    <!-- Social Preview Meta Tags -->
+    <meta property="og:title" content="AI Medical Image Analyzer - MediScan AI" />
+    <meta property="og:description" content="Upload a chest X-ray and let AI analyze for pneumonia. Powered by deep learning." />
+    <meta property="og:image" content="{{ url_for('static', filename='Thumbnail.png') }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ request.url_root }}" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI Medical Image Analyzer - MediScan AI" />
+    <meta name="twitter:description" content="Upload a chest X-ray and let AI analyze for pneumonia. Powered by deep learning." />
+    <meta name="twitter:image" content="{{ url_for('static', filename='Thumbnail.png') }}" />
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
